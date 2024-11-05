@@ -44,11 +44,11 @@ spec:
 
   resources:
     requests:
+      memory: 64Gi
+      cpu: 8
+    limits:
       memory: 128Gi
       cpu: 16
-    limits:
-      memory: 256Gi
-      cpu: 32
 
   storage:
     storageClass: wekafs--sdf-k8s01
