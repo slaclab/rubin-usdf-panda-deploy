@@ -1,0 +1,72 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  # note the name is the DB services/pods  not the Cluster name.
+  name: usdf-panda-idds2
+spec:
+  instances: 1
+  primaryUpdateStrategy: unsupervised
+
+  bootstrap:
+    pg_basebackup:                    # “clone” via pg_basebackup + stream
+      source: old-idds-primary     # must match externalClusters[].name
+
+  replica:
+    enabled: false
+    source: old-idds-primary
+
+  externalClusters:
+  - name: old-idds-primary                       # logical name referenced above
+    connectionParameters:
+      host: usdf-panda-idds-rw                   # Service pointing to primary
+      user: streaming_replica                       # role with REPLICATION privilege
+    sslKey:
+      name: usdf-panda-idds-replication
+      key: tls.key
+    sslCert:
+      name: usdf-panda-idds-replication
+      key: tls.crt
+    sslRootCert:
+      name: usdf-panda-idds-ca
+      key: ca.crt
+
+  #bootstrap:
+  #  initdb:
+  #    database: idds
+  #    owner: panda
+  #    secret:
+  #      name: usdf-panda-idds-dev-creds
+  #    postInitTemplateSQL:
+  #      - CREATE EXTENSION IF NOT EXISTS pg_cron;
+  #      - GRANT USAGE ON SCHEMA cron TO rubin;
+
+  imageName: lsstsqre/cloudnative-pg:14
+  inheritedMetadata:
+    annotations:
+      prometheus.io/scrape: 'true' 
+
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+
+  postgresql:
+    shared_preload_libraries: [ 'pg_cron', 'pg_partman_bgw' ]
+    parameters:
+      jit: "off"
+      shared_buffers: 32GB
+      max_connections: "1000"
+      pg_stat_statements.max: "10000"
+      pg_stat_statements.track: all
+      work_mem: 128MB
+
+  resources:
+    requests:
+      memory: 64Gi
+      cpu: 8
+    limits:
+      memory: 128Gi
+      cpu: 16
+
+  storage:
+    storageClass: wekafs--sdf-k8s01
+    size: 1000Gi

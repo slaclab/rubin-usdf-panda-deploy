@@ -1,19 +1,40 @@
-
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   # note the name is the DB services/pods  not the Cluster name.
-  name: usdf-panda-server
+  name: usdf-panda-server2
 spec:
   instances: 1
   primaryUpdateStrategy: unsupervised
 
+  #bootstrap:
+  #  initdb:
+  #    database: panda_db
+  #    owner: panda
+  #    secret:
+  #      name: usdf-panda-server-dev-creds
   bootstrap:
-    initdb:
-      database: panda_db
-      owner: panda
-      secret:
-        name: usdf-panda-server-dev-creds
+    pg_basebackup:                    # “clone” via pg_basebackup + stream
+      source: old-server-primary     # must match externalClusters[].name
+
+  replica:
+    enabled: true
+    source: old-server-primary
+
+  externalClusters:
+  - name: old-server-primary                       # logical name referenced above
+    connectionParameters:
+      host: usdf-panda-server-rw                   # Service pointing to primary
+      user: streaming_replica                       # role with REPLICATION privilege
+    sslKey:
+      name: usdf-panda-server-replication
+      key: tls.key
+    sslCert:
+      name: usdf-panda-server-replication
+      key: tls.crt
+    sslRootCert:
+      name: usdf-panda-server-ca
+      key: ca.crt
   
   imageName: lsstsqre/cloudnative-pg:14
   inheritedMetadata:
@@ -54,4 +75,4 @@ spec:
     storageClass: wekafs--sdf-k8s01
     size: 1000Gi
 
-
+  enablePDB: true
