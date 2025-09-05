@@ -1,5 +1,4 @@
-
-CNPG_VERSION ?= 1.24
+CNPG_VERSION ?= 1.26
 CNPG_VERSION_MINOR ?= 1
 
 update-cnpg-operator:

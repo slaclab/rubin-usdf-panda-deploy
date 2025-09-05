@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    metallb.io/ip-allocated-from-pool: sdf-rubin-ingest
+    metallb.io/address-pool: sdf-rubin-ingest
+  name: panda-db-svc
+  namespace: panda-db
+spec:
+  ports:
+  - name: pgbouncer
+    nodePort: 31112
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    cnpg.io/cluster: usdf-panda-server
+    role: primary
+  type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    metallb.io/ip-allocated-from-pool: sdf-services
+    metallb.io/address-pool: sdf-services
+  name: panda-db-svc2
+  namespace: panda-db
+spec:
+  ports:
+  - name: pgbouncer
+    nodePort: 32155
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    cnpg.io/cluster: usdf-panda-server
+    role: primary
+  type: LoadBalancer

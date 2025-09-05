@@ -5,16 +5,32 @@ metadata:
   # note the name is the DB services/pods  not the Cluster name.
   name: usdf-panda-server
 spec:
-  instances: 1
+  startDelay: 300
+  backup:
+    retentionPolicy: "7d"
+    barmanObjectStore:
+      destinationPath: s3://rubin-usdf-panda-server
+      endpointURL: https://s3dfrgw.slac.stanford.edu
+      s3Credentials:
+        accessKeyId:
+          name: s3-creds-panda
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: s3-creds-panda
+          key: ACCESS_SECRET_KEY
+  instances: 2
   primaryUpdateStrategy: unsupervised
 
   bootstrap:
     initdb:
-      database: panda_db
-      owner: panda
+      database: panda
+      owner: rubin
       secret:
-        name: usdf-panda-server-dev-creds
-  
+        name: usdf-panda-server-creds
+      postInitTemplateSQL:
+        - CREATE EXTENSION IF NOT EXISTS pg_cron;
+        - GRANT USAGE ON SCHEMA cron TO rubin;
+
   imageName: lsstsqre/cloudnative-pg:14
   inheritedMetadata:
     annotations:
@@ -33,8 +49,8 @@ spec:
       pg_stat_statements.track: all
       work_mem: 128MB
     pg_hba:
-      - local all panda trust
-      - host all panda localhost trust
+      - local all rubin trust
+      - host all rubin localhost trust
       - local all postgres trust
       - host all postgres localhost trust
       - host all all 0.0.0.0/0 md5
@@ -44,14 +60,14 @@ spec:
 
   resources:
     requests:
-      memory: 64Gi
-      cpu: 8
-    limits:
       memory: 128Gi
       cpu: 16
+    limits:
+      memory: 256Gi
+      cpu: 32 
 
   storage:
     storageClass: wekafs--sdf-k8s01
-    size: 1000Gi
+    size: 3000Gi
 
 

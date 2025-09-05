@@ -1,0 +1,97 @@
+
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  # note the name is the DB services/pods  not the Cluster name.
+  name: usdf-panda-server2
+  namespace: panda-db
+spec:
+  startDelay: 300
+  #backup:
+  #  retentionPolicy: "7d"
+  #  barmanObjectStore:
+  #    destinationPath: s3://rubin-usdf-panda-server
+  #    endpointURL: https://s3dfrgw.slac.stanford.edu
+  #    s3Credentials:
+  #      accessKeyId:
+  #        name: s3-creds-panda
+  #        key: ACCESS_KEY_ID
+  #      secretAccessKey:
+  #        name: s3-creds-panda
+  #        key: ACCESS_SECRET_KEY
+  bootstrap:
+    pg_basebackup:                    # “clone” via pg_basebackup + stream
+      source: old-server-primary     # must match externalClusters[].name
+
+  replica:
+    enabled: false
+    source: old-server-primary
+
+  externalClusters:
+  - name: old-server-primary                       # logical name referenced above
+    connectionParameters:
+      host: usdf-panda-server-rw                   # Service pointing to primary
+      user: streaming_replica                       # role with REPLICATION privilege
+    sslKey:
+      name: usdf-panda-server-replication
+      key: tls.key
+    sslCert:
+      name: usdf-panda-server-replication
+      key: tls.crt
+    sslRootCert:
+      name: usdf-panda-server-ca
+      key: ca.crt
+
+  instances: 2
+  primaryUpdateStrategy: unsupervised
+
+  #bootstrap:
+  #  initdb:
+  #    database: panda
+  #    owner: rubin
+  #    secret:
+  #      name: usdf-panda-server-creds
+  #    postInitTemplateSQL:
+  #      - CREATE EXTENSION IF NOT EXISTS pg_cron;
+  #      - GRANT USAGE ON SCHEMA cron TO rubin;
+
+  #imageName: lsstsqre/cloudnative-pg:14
+  imageName: ghcr.io/lsst-sqre/cnpg-postgres-images:17.5
+  inheritedMetadata:
+    annotations:
+      prometheus.io/scrape: 'true' 
+
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+
+  postgresql:
+    shared_preload_libraries: [ 'pg_cron', 'pg_partman_bgw' ]
+    parameters:
+      shared_buffers: 32GB
+      max_connections: "1000"
+      pg_stat_statements.max: "10000"
+      pg_stat_statements.track: all
+      work_mem: 128MB
+      jit: "off"
+    pg_hba:
+      - local all rubin trust
+      - host all rubin localhost trust
+      - local all postgres trust
+      - host all postgres localhost trust
+      - host all all 0.0.0.0/0 md5
+      - host all all ::0/0 md5
+      - host all postgres 0.0.0.0/0 reject
+      - host all postgres ::0/0 reject
+
+  resources:
+    requests:
+      memory: 64Gi
+      cpu: 8
+    limits:
+      memory: 96Gi
+      cpu: 12
+
+  storage:
+    storageClass: wekafs--sdf-k8s01
+    size: 3000Gi
