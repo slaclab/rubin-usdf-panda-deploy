@@ -1,0 +1,64 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: usdf-panda-idds2
+  namespace: panda-db
+spec:
+
+  bootstrap:
+    pg_basebackup:                    # “clone” via pg_basebackup + stream
+      source: old-idds-primary     # must match externalClusters[].name
+
+  replica:
+    enabled: true
+    source: old-idds-primary
+
+  externalClusters:
+  - name: old-idds-primary                       # logical name referenced above
+    connectionParameters:
+      host: usdf-panda-idds3-rw                   # Service pointing to primary
+      user: streaming_replica                    # role with REPLICATION privilege
+    sslKey:
+      name: usdf-panda-idds3-replication
+      key: tls.key
+    sslCert:
+      name: usdf-panda-idds3-replication
+      key: tls.crt
+    sslRootCert:
+      name: usdf-panda-idds3-ca
+      key: ca.crt
+
+  instances: 1
+  primaryUpdateStrategy: unsupervised
+
+  imageName: lsstsqre/cloudnative-pg:14
+  inheritedMetadata:
+    annotations:
+      prometheus.io/scrape: 'true'
+
+  enablePDB: true
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+
+  postgresql:
+    shared_preload_libraries: [ 'pg_cron', 'pg_partman_bgw' ]
+    parameters:
+      shared_buffers: 8GB
+      max_connections: "1000"
+      pg_stat_statements.max: "10000"
+      pg_stat_statements.track: all
+      work_mem: 128MB
+      jit: "off"
+
+  resources:
+    requests:
+      memory: 16Gi
+      cpu: 4
+    limits:
+      memory: 16Gi
+      cpu: 4
+
+  storage:
+    storageClass: wekafs--sdf-k8s01
+    size: 3000Gi
