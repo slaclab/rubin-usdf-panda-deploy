@@ -1,10 +1,36 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: s3-store-server
+spec:
+  configuration:
+    destinationPath: s3://rubin-usdf-panda-server
+    endpointURL: https://s3dfrgw.slac.stanford.edu
+    s3Credentials:
+      accessKeyId:
+        key: ACCESS_KEY_ID
+        name: s3-creds-server
+      secretAccessKey:
+        key: ACCESS_SECRET_KEY
+        name: s3-creds-server
+    wal:
+      compression: gzip
+      maxParallel: 8
+    data:
+      compression: gzip
+      jobs: 4
+      immediateCheckpoint: true
+  retentionPolicy: 15d
+
+---
+
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: usdf-panda-server-backup
+  name: usdf-panda-server2-backup
 spec:
   immediate: true
   schedule: "0 0 0 * * *"
   backupOwnerReference: self
   cluster:
-    name: usdf-panda-server
+    name: usdf-panda-server2

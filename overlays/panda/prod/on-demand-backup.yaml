@@ -1,0 +1,11 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: usdf-panda-server-backup-2025091012
+  namespace: panda-db
+spec:
+  cluster:
+    name: usdf-panda-server2
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
