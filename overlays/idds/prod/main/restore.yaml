@@ -68,5 +68,3 @@ spec:
       - name: source
         persistentVolumeClaim:
           claimName: source-data
-
-

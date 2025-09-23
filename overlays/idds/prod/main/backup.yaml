@@ -1,10 +1,35 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: s3-store-idds
+spec:
+  configuration:
+    destinationPath: s3://rubin-usdf-panda-idds
+    endpointURL: https://s3dfrgw.slac.stanford.edu
+    s3Credentials:
+      accessKeyId:
+        key: ACCESS_KEY_ID
+        name: s3-creds-idds
+      secretAccessKey:
+        key: ACCESS_SECRET_KEY
+        name: s3-creds-idds
+    wal:
+      compression: gzip
+  retentionPolicy: 15d
+
+---
+
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: usdf-idds-backup
+  name: usdf-idds2-backup
+  namespace: panda-db
 spec:
   immediate: true
   schedule: "0 0 0 * * *"
   backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
   cluster:
-    name: usdf-panda-idds
+    name: usdf-panda-idds2
