@@ -4,29 +4,13 @@ metadata:
   name: usdf-panda-idds2
   namespace: panda-db
 spec:
-
-  bootstrap:
-    pg_basebackup:                    # “clone” via pg_basebackup + stream
-      source: old-idds-primary     # must match externalClusters[].name
-
-  replica:
-    enabled: false
-    source: old-idds-primary
-
-  externalClusters:
-  - name: old-idds-primary                       # logical name referenced above
-    connectionParameters:
-      host: usdf-panda-idds3-rw                   # Service pointing to primary
-      user: streaming_replica                    # role with REPLICATION privilege
-    sslKey:
-      name: usdf-panda-idds3-replication
-      key: tls.key
-    sslCert:
-      name: usdf-panda-idds3-replication
-      key: tls.crt
-    sslRootCert:
-      name: usdf-panda-idds3-ca
-      key: ca.crt
+  #backup:
+  plugins:
+  - name: barman-cloud.cloudnative-pg.io
+    enabled: true
+    isWALArchiver: true
+    parameters:
+      barmanObjectName: s3-store-idds
 
   instances: 2
   primaryUpdateStrategy: unsupervised

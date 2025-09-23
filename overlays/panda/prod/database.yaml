@@ -5,7 +5,13 @@ metadata:
   name: usdf-panda-server2
   namespace: panda-db
 spec:
-  #backup:
+  bootstrap:
+    initdb:
+      database: panda
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
+      owner: rubin
   plugins:
   - name: barman-cloud.cloudnative-pg.io
     enabled: true
@@ -21,10 +27,6 @@ spec:
     annotations:
       prometheus.io/scrape: 'true' 
 
-  nodeMaintenanceWindow:
-    inProgress: false
-    reusePVC: true
-
   postgresql:
     shared_preload_libraries: [ 'pg_cron', 'pg_partman_bgw' ]
     parameters:
@@ -33,7 +35,10 @@ spec:
       pg_stat_statements.max: "10000"
       pg_stat_statements.track: all
       work_mem: 128MB
-      jit: "off"
+      jit: "on"
+      statement_timeout: "14400000" 
+      transaction_timeout: "14400000"
+      idle_in_transaction_session_timeout: "14400000"
     pg_hba:
       - local all rubin trust
       - host all rubin localhost trust

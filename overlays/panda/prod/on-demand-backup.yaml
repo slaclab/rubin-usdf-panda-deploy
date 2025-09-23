@@ -1,7 +1,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Backup
 metadata:
-  name: usdf-panda-server-backup-2025091013
+  name: usdf-panda-server-backup-2025092212
   namespace: panda-db
 spec:
   cluster:
