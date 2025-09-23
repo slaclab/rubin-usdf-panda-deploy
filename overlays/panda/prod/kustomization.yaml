@@ -2,8 +2,8 @@
 resources:
 - ns.yaml
 # cnpg
-#- database.yaml
-#- backup.yaml
+- database.yaml
+- backup.yaml
 
 secretGenerator:
 - name: usdf-panda-server-creds
