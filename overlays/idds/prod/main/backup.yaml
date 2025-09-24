@@ -14,7 +14,10 @@ spec:
         key: ACCESS_SECRET_KEY
         name: s3-creds-idds
     wal:
-      compression: gzip
+      maxParallel: 8
+    data:
+      jobs: 8
+      immediateCheckpoint: true
   retentionPolicy: 15d
 
 ---
