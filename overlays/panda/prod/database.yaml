@@ -12,12 +12,24 @@ spec:
       localeCType: C
       localeCollate: C
       owner: rubin
-  plugins:
-  - name: barman-cloud.cloudnative-pg.io
-    enabled: true
-    isWALArchiver: true
-    parameters:
-      barmanObjectName: s3-store-server
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://rubin-usdf-panda-server
+      endpointURL: https://s3dfrgw.slac.stanford.edu
+      s3Credentials:
+        accessKeyId:
+          key: ACCESS_KEY_ID
+          name: s3-creds-server
+        secretAccessKey:
+          key: ACCESS_SECRET_KEY
+          name: s3-creds-server
+      wal:
+        maxParallel: 8
+      data:
+        jobs: 8
+        immediateCheckpoint: true
+    retentionPolicy: 15d
+    target: prefer-standby
   startDelay: 300
   instances: 2
   primaryUpdateStrategy: unsupervised
@@ -54,9 +66,15 @@ spec:
       memory: 64Gi
       cpu: 8
     limits:
-      memory: 96Gi
-      cpu: 12
+      memory: 192Gi
+      cpu: 24
 
   storage:
     storageClass: wekafs--sdf-k8s01
     size: 3000Gi
+
+  smartShutdownTimeout: 3
+  startDelay: 3600
+  stopDelay: 180
+  switchoverDelay: 180
+  failoverDelay: 180
