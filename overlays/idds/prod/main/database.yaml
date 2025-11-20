@@ -5,13 +5,24 @@ metadata:
   namespace: panda-db
 spec:
   #backup:
-  plugins:
-  - name: barman-cloud.cloudnative-pg.io
-    enabled: true
-    isWALArchiver: true
-    parameters:
-      barmanObjectName: s3-store-idds
-
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://rubin-usdf-panda-idds
+      endpointURL: https://s3dfrgw.slac.stanford.edu
+      s3Credentials:
+        accessKeyId:
+          key: ACCESS_KEY_ID
+          name: s3-creds-idds
+        secretAccessKey:
+          key: ACCESS_SECRET_KEY
+          name: s3-creds-idds
+      wal:
+        maxParallel: 8
+      data:
+        jobs: 8
+        immediateCheckpoint: true
+    retentionPolicy: 15d
+  
   instances: 2
   primaryUpdateStrategy: unsupervised
 
@@ -46,3 +57,7 @@ spec:
   storage:
     storageClass: wekafs--sdf-k8s01
     size: 3000Gi
+  smartShutdownTimeout: 2
+  stopDelay: 180
+  switchoverDelay: 178
+  failoverDelay: 180
