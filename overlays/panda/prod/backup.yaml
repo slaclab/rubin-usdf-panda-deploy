@@ -31,8 +31,5 @@ spec:
   immediate: true
   schedule: "0 0 0 * * *"
   backupOwnerReference: self
-  method: plugin
-  pluginConfiguration:
-    name: barman-cloud.cloudnative-pg.io
   cluster:
     name: usdf-panda-server2
