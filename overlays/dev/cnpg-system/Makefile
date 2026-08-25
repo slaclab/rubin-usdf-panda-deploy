@@ -1,7 +1,7 @@
-CNPG_VERSION_MAJOR ?= '1.26'
-CNPG_VERSION_MINOR ?= '1'
+CNPG_VERSION_MAJOR ?= '1.30'
+CNPG_VERSION_MINOR ?= '0'
 CNPG_NS ?= cnpg-system
-KUBECTL_DEPLOY_CONTEXT ?= 'usdf-summitdb'
+KUBECTL_DEPLOY_CONTEXT ?= 'usdf-panda-dev'
 
 ensure-context:
 	if [ '$(shell kubectl config current-context)' != $(KUBECTL_DEPLOY_CONTEXT) ]; then echo "Configured deployment context inccorect; expecting $(KUBECTL_DEPLOY_CONTEXT)."; exit 1; fi

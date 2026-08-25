@@ -1,3 +1,4 @@
+#Please don't commit here, this repo has been moved to https://github.com/slaclab/rubin-usdf-panda-deploy
 
 This repo is a copy of the USDF butler Postgres infrastructure kubernetes manifests, 
 modified to hold the Rubin USDF PanDA & iDDS Postgres infrastructure kubernetes manifests.
